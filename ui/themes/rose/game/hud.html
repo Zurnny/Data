@@ -1,0 +1,261 @@
+<rml>
+
+	<head>
+		<title></title>
+		<link type="text/template" href="../templates/window-box.html" />
+		<link type="text/template" href="../templates/elements/gauge.html" />
+		<link type="text/rcss" href="../styles/spritesheet_itemicon.css" />
+		<link type="text/rcss" href="../styles/spritesheet_socketgem.css" />
+		<link type="text/rcss" href="../styles/spritesheet_elementicon.css" />
+		<link type="text/rcss" href="../styles/item_slot.css" />
+		<link type="text/rcss" href="../styles/spritesheet_inventory.css" />
+		<link type="text/rcss" href="../styles/components.css" />
+
+		<style>
+			body {
+			margin: 5dp;
+			}
+
+			.window-title {
+			font-size: 12dp;
+			}
+
+			#window-title-text {
+			display: block;
+			height: 20dp;
+			line-height: 20dp;
+			padding-top: 1dp;
+			}
+
+			.window-fixed-size {
+			padding-top: 20dp;
+			width: 250dp;
+			}
+
+			#state-icon-container { margin-top: 5dp; width: 195dp; }
+			.hud-status-row { display: flex; flex-wrap: wrap; }
+			.hud-status-icon { display: inline-block; width: 20dp; height: 20dp; margin: 0 1dp 1dp 0; flex-shrink: 0; }
+			.hud-status-icon img { width: 20dp; height: 20dp; pointer-events: none; }
+			.hud-status-icon.blink { opacity: 0.25; }
+			.hud-status-icon.inactive img { image-color: rgb(255, 0, 0); }
+			.hud-status-icon.warning img { image-color: rgb(255, 180, 180); }
+
+			#window-content.content {
+			padding: 1dp 2dp 1dp 1dp;
+			display: flex;
+			flex-direction: column;
+			}
+
+			span.marker {
+			position: absolute;
+			}
+
+			div.footer {
+			flex: 2;
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			margin: 2dp 2dp 0 2dp;
+			font-size: 12dp;
+			}
+
+			div.footer>span.left {
+			flex-grow: 1;
+			text-align: left;
+			font-weight: 800;
+			}
+
+			div.footer>span.right {
+			flex-grow: 1;
+			text-align: right;
+			}
+
+			#zulie {
+			font-weight: 800;
+			}
+
+			b.money,
+			span.level {
+			color: yellow;
+			}
+
+			@keyframes low {
+			from {
+			color: red;
+			}
+
+			to {
+			color: white;
+			}
+			}
+
+			gauge.low-value-animation {
+			animation: 1.5s cubic-in-out infinite alternate low;
+			}
+
+			#exp {
+			position: relative;
+			height: 13dp;
+			}
+
+			#exp > span.exp-text {
+			position: absolute;
+			left: 0dp;
+			top: 0dp;
+			width: 100%;
+			height: 13dp;
+			line-height: 13dp;
+			text-align: center;
+			font-size: 12dp;
+			pointer-events: none;
+			}
+
+			div.container {
+			flex: 2;
+			display: flex;
+			}
+
+			div.hud {
+			width: 195dp;
+			}
+
+			div.pat-fuel {
+			display: flex;
+			height: 100%;
+			flex-direction: column;
+			justify-content: flex-end;
+			margin-left: 5dp;
+			}
+
+			div.weapon-slot {
+			position: absolute;
+			left: 200dp;
+			top: 32dp;
+			width: 42dp;
+			height: 42dp;
+			}
+
+			div.weapon-slot > img {
+			position: absolute;
+			left: -3dp;
+			top: -4dp;
+			width: 50dp;
+			height: 50dp;
+			pointer-events: none;
+			}
+
+			div.weapon-slot item-slot {
+			position: absolute;
+			left: -4dp;
+			top: -4dp;
+			width: 50dp;
+			height: 50dp;
+			}
+
+			.tooltip .tooltiptext {
+			background: rgba(0, 0, 0, 200);
+			min-width: 50dp;
+			width: 80dp;
+			left: 100%;
+			bottom: 50dp;
+			}
+		</style>
+	</head>
+
+	<body id="hud" onclick="self-target">
+		<handle data-model="character" class="window-title" style="cursor: default" id="window-title-text">{{name}}</handle>
+		<div class="container">
+			<div class="hud" data-model="character">
+				<div class="window-fixed-size">
+					<div id="window-content" class="content">
+						<!-- HP Gauge -->
+						<gauge id="health" class="horizontal-lg-lg red"
+							data-class-low-value-animation="health_percent &lt;= 20"
+							data-attr-gvalue="health"
+							data-attr-gmax="max_health">
+							<template src="gauge-info-vmp" />
+						</gauge>
+
+						<!-- MP Gauge -->
+						<gauge id="mana" class="horizontal-lg-lg blue"
+							data-class-low-value-animation="mana_percent &lt;= 20"
+							data-attr-gvalue="mana"
+							data-attr-gmax="max_mana">
+							<template src="gauge-info-vmp" />
+						</gauge>
+
+						<!-- Exp Gauge -->
+						<gauge id="exp" class="horizontal-sm-lg yellow" data-attr-gvalue="experience"
+							data-attr-gmax="max_experience">
+							<span class="marker">
+								<img sprite="gauge-bg-sm-lg-markers" />
+							</span>
+							<span class="exp-text">
+								<label id="percent" />%
+							</span>
+						</gauge>
+					</div>
+					<!--This handle is added so you can click the footer of the hud and move the hud around-->
+					<handle move_target="#document">
+						<div class="footer">
+							<span class="left">
+								<span class="level">{{level}} </span>
+								<span class="job">
+									<str data-attr-job-name="job">Visitor</str>
+								</span>
+							</span>
+							<span class="right">
+								<str string-id="31" id="zulie">Zulie</str>: <b class="money">{{format_money(money)}}</b>
+							</span>
+						</div>
+					</handle>
+				</div>
+			</div>
+
+			<!-- Weapon / ammo slot -->
+			<div class="weapon-slot" data-model="inventory">
+				<img sprite="GEN_INVSLOT08"
+					data-if="equipped_weapon.id == 0 &amp;&amp; equipped_shot_item.id == 0" />
+
+				<item-slot data-if="equipped_shot_item.id == 0"
+					data-attr-item-key="equipped_weapon.key"
+					data-attr-item-id="equipped_weapon.id"
+					data-attr-item-type="equipped_weapon.type"
+					data-attr-item-quantity="equipped_weapon.quantity"
+					data-attr-item-refine-grade="equipped_weapon.refine_grade"
+					data-attr-item-life="equipped_weapon.life"
+					data-attr-item-durability="equipped_weapon.durability"
+					data-attr-item-appraisal="equipped_weapon.appraisal_no"
+					data-attr-item-refine-color="equipped_weapon.refine_color" />
+
+				<item-slot data-if="equipped_shot_item.id != 0"
+					data-attr-item-key="equipped_shot_item.key"
+					data-attr-item-id="equipped_shot_item.id"
+					data-attr-item-type="equipped_shot_item.type"
+					data-attr-item-quantity="equipped_shot_item.quantity" />
+			</div>
+
+			<!-- PAT Fuel -->
+			<div onclick="ignore" data-model="pat">
+				<div class="pat-fuel">
+					<gauge data-if="show" id="fuel" class="horizontal-sm-md green" data-attr-gvalue="fuel"
+						data-attr-gmax="max_fuel">
+						<span>
+							<label id="percent" />%
+						</span>
+					</gauge>
+				</div>
+			</div>
+		</div>
+
+		<!-- State Icons -->
+		<div id="state-icon-container" onclick="ignore" data-model="hud-statuses">
+			<div class="hud-status-row" data-for="group : groups" data-if="group.statuses.size > 0">
+				<span class="hud-status-icon" data-for="status : group.statuses" data-class-blink="status.blink" data-class-inactive="!status.active" data-class-warning="status.is_warning" data-attr-hud-status="status.index">
+					<img data-attr-sprite="status.sprite"/>
+				</span>
+			</div>
+		</div>
+	</body>
+</rml>
